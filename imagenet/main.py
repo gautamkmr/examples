@@ -5,6 +5,12 @@ import shutil
 import time
 import warnings
 
+# Setting for distributed training.
+import torch.multiprocessing as mp
+if __name__ == '__main__':
+    mp.set_start_method('forkserver')
+
+
 import torch
 import torch.nn as nn
 import torch.nn.parallel
@@ -171,6 +177,7 @@ def main():
         return
 
     for epoch in range(args.start_epoch, args.epochs):
+        epoch_start = time.time()
         if args.distributed:
             train_sampler.set_epoch(epoch)
         adjust_learning_rate(optimizer, epoch)
@@ -178,6 +185,7 @@ def main():
         # train for one epoch
         train(train_loader, model, criterion, optimizer, epoch)
 
+        print('Epoch {} took time: {}'.format(epoch, time.time() - epoch_start))
         # evaluate on validation set
         acc1 = validate(val_loader, model, criterion)
 
